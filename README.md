@@ -31,7 +31,7 @@ COPY iris-svc.pkl /usr/src/app/model.pkl
 Build and run the image using `docker`:
 ```bash
 docker build -t iris-svc .
-docker run -p 4000:8080 iris-svc
+docker run -d -p 4000:8080 iris-svc
 ```
 
 Make a request to the API:
