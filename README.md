@@ -8,7 +8,7 @@ Build your model:
 from sklearn import svm
 from sklearn import datasets
 import pandas as pd
-clf = svm.SVC()
+clf = svm.SVC(probability=True)
 iris = datasets.load_iris()
 X = pd.DataFrame(iris.data, columns=iris.feature_names)
 X = X[["sepal length (cm)"]]
@@ -29,14 +29,17 @@ COPY iris-svc.pkl /usr/src/app/model.pkl
 ```
 
 Build and run the image using `docker`:
-```bash
-docker build -t iris-svc .
-docker run -d -p 4000:8080 iris-svc
+```console
+$ docker build -t iris-svc .
+$ docker run -d -p 4000:8080 iris-svc
 ```
 
-Make a request to the API:
-```bash
-curl -H "Content-Type: application/json" -X GET -d '[{"sepal length (cm)":4.4}]' http://localhost:4000/predictproba
+Make requests to the API:
+```console
+$ curl -H "Content-Type: application/json" -X GET -d '{"sepal length (cm)":4.4}' http://localhost:4000/predictproba
+  [{"0":0.8284069169,"1":0.1077571623,"2":0.0638359208}]
+$ curl -H "Content-Type: application/json" -X GET -d '[{"sepal length (cm)":4.4}, {"sepal length (cm)":15}]' http://localhost:4000/predict
+  [0, 2]
 ```
 
 
