@@ -1,4 +1,4 @@
-from bottle import route, run, request, response
+from bottle import route, run, request, response, post
 from sklearn.externals import joblib
 import json
 import pandas
@@ -6,13 +6,18 @@ import pandas
 model = joblib.load('model.pkl')
 
 
-@route('/predict')
+@route('/predict', method="POST")
 def predict():
     response.content_type = 'application/json'
     try:
         body = request.json
         body = body if isinstance(body, list) else [body]
         X = pandas.DataFrame.from_dict(body)
+        
+        if (hasattr(model, 'get_booster')):
+            # HACK https://github.com/dmlc/xgboost/issues/1238
+            X = X[model.get_booster().feature_names]
+
         result = model.predict(X)
         return json.dumps(result.tolist())
     except Exception as error:
@@ -20,13 +25,18 @@ def predict():
         return json.dumps({'error': str(error)})
 
 
-@route('/predictproba')
+@route('/predictproba', method="POST")
 def predictproba():
     response.content_type = 'application/json'
     try:
         body = request.json
         body = body if isinstance(body, list) else [body]
         X = pandas.DataFrame.from_dict(body)
+
+        if (hasattr(model, 'get_booster')):
+            # HACK https://github.com/dmlc/xgboost/issues/1238
+            X = X[model.get_booster().feature_names]
+
         result = pandas.DataFrame(model.predict_proba(X),
                                   columns=model.classes_)
         return result.to_json(orient="records")
